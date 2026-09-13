@@ -1,0 +1,42 @@
+{
+  "name": "QSO MOBILE — Livro de Contatos",
+  "short_name": "QSO MOBILE",
+  "description": "Livro de contatos para radioamadores com databanks locais, frequências, repetidoras e rodada.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait-primary",
+  "background_color": "#060a1a",
+  "theme_color": "#060a1a",
+  "lang": "pt-BR",
+  "categories": [
+    "utilities",
+    "productivity",
+    "communication"
+  ],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
