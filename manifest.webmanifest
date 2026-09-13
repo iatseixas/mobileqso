@@ -1,7 +1,7 @@
 {
-  "name": "QSO MOBILE — Livro de Contatos",
-  "short_name": "QSO MOBILE",
-  "description": "Livro de contatos para radioamadores com databanks locais, frequências, repetidoras e rodada.",
+  "name": "QSO Logbook",
+  "short_name": "QSO Logbook",
+  "description": "Logbook de radioamador com busca offline, databanks locais, frequências, repetidoras, rodadas e registro de QSOs.",
   "id": "./",
   "start_url": "./",
   "scope": "./",

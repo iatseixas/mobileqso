@@ -1,6 +1,6 @@
-# QSO MOBILE
+# QSO Logbook
 
-PWA oficial do projeto **QSO MOBILE — Livro de Contatos**.
+PWA oficial do projeto **QSO Logbook — Livro de Contatos**.
 
 ## Recursos
 
@@ -18,7 +18,7 @@ PWA oficial do projeto **QSO MOBILE — Livro de Contatos**.
 - `index.html` — aplicação completa e databanks locais.
 - `manifest.webmanifest` — manifesto instalável.
 - `sw.js` — cache/offline e atualização do app shell.
-- `icons/` — identidade oficial QSO MOBILE para PWA/iOS.
+- `icons/` — identidade oficial QSO Logbook para PWA/iOS.
 - `.github/workflows/pages.yml` — publicação no GitHub Pages.
 
 ## Instalação
@@ -28,3 +28,10 @@ Após a publicação no GitHub Pages, abra a URL HTTPS do projeto e use **Instal
 ## Dados locais
 
 QSOs, favoritos, rádios, ajustes e alterações dos databanks permanecem no dispositivo via IndexedDB. Atualizações do PWA não devem apagar esses dados.
+
+## Identidade atual
+
+- Nome oficial: **QSO Logbook**.
+- Cabeçalho em uma linha.
+- Totem superior: **PP5KHZ**.
+- Contador de indicativos lido dinamicamente da `HAM_DB`, com flash visual a cada atualização.
