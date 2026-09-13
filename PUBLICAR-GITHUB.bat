@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0"
 echo ================================================
-echo   QSO MOBILE - Publicacao no GitHub
+echo   QSO Logbook - Publicacao no GitHub
  echo   Repositorio: iatseixas/mobileqso
  echo ================================================
 echo.
@@ -19,7 +19,7 @@ if not exist .git (
 
 git checkout -B main || goto :erro
 git add . || goto :erro
-git commit -m "Publica QSO MOBILE PWA v2.4" 2>nul
+git commit -m "Publica QSO Logbook PWA v2.4" 2>nul
 
 git remote get-url origin >nul 2>nul
 if errorlevel 1 (
@@ -29,7 +29,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo Enviando QSO MOBILE para GitHub...
+echo Enviando QSO Logbook para GitHub...
 git push -u origin main || goto :erro
 
 echo.
