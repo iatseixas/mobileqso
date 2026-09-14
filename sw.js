@@ -1,9 +1,10 @@
-const CACHE_NAME = 'qso-logbook-pwa-v2.6-3';
+const CACHE_NAME = 'qso-logbook-pwa-v2.6-4';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './anatel-databank.js',
+  './theme-coherence.js',
   './icons/icon-64.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -12,9 +13,12 @@ const APP_SHELL = [
 ];
 
 function patchIndex(html) {
-  if (html.includes('id="anatel-databank-runtime"')) return html;
-  const tag = '<script id="anatel-databank-runtime" src="./anatel-databank.js?v=2.6-3"></script>';
-  return html.includes('</body>') ? html.replace('</body>', tag + '</body>') : html + tag;
+  const tags = [];
+  if (!html.includes('id="anatel-databank-runtime"')) tags.push('<script id="anatel-databank-runtime" src="./anatel-databank.js?v=2.6-4"></script>');
+  if (!html.includes('id="theme-coherence-runtime"')) tags.push('<script id="theme-coherence-runtime" src="./theme-coherence.js?v=2.6-4"></script>');
+  if (!tags.length) return html;
+  const inject = tags.join('');
+  return html.includes('</body>') ? html.replace('</body>', inject + '</body>') : html + inject;
 }
 
 self.addEventListener('install', event => {
