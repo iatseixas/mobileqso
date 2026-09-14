@@ -4,9 +4,10 @@
 (function(){
   'use strict';
 
-  const VERSION='2.6-3';
+  const VERSION='2.6-5';
   const ANATEL_ZIP_URL='https://www.anatel.gov.br/dadosabertos/paineis_de_dados/outorga_e_licenciamento/estacoes_licenciadas.zip';
   let useLocalPackage=false;
+  const IS_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 
   const norm=v=>String(v??'').trim();
   const key=v=>norm(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
@@ -146,34 +147,58 @@
     return installCsv(picked.bytes,picked.name);
   }
 
-  function ensureFileInput(){
-    let input=document.getElementById('anatelPackageFile');
-    if(input) return input;
-    input=document.createElement('input');
-    input.type='file'; input.id='anatelPackageFile'; input.className='fileinput';
-    input.accept='.zip,.csv,application/zip,text/csv';
-    input.addEventListener('change',async e=>{
-      const file=e.target.files?.[0]; if(!file){e.target.value='';return;}
-      try{await importPackage(file);useLocalPackage=false;}
-      catch(err){console.error(err);toast('Falha no pacote ANATEL: '+(err.message||'arquivo inválido'));}
-      e.target.value='';
-    });
-    (document.querySelector('#databanksCard .card-body')||document.body).appendChild(input);
-    return input;
+  function openPackagePicker(){
+    const input=document.createElement('input');
+    input.type='file';
+    input.accept='.zip,.csv,application/zip,application/x-zip-compressed,text/csv,text/plain';
+    input.setAttribute('aria-label','Selecionar pacote ANATEL');
+    input.style.cssText='position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:.01;z-index:2147483647;pointer-events:auto';
+    const cleanup=()=>{try{input.remove()}catch(_){}};
+    input.addEventListener('change',async()=>{
+      const file=input.files&&input.files[0];
+      if(!file){cleanup();return;}
+      try{
+        toast('Lendo pacote ANATEL...');
+        await importPackage(file);
+        useLocalPackage=false;
+      }catch(err){
+        console.error(err);
+        toast('Falha no pacote ANATEL: '+(err.message||'arquivo inválido'));
+      }finally{cleanup();}
+    },{once:true});
+    input.addEventListener('cancel',cleanup,{once:true});
+    document.body.appendChild(input);
+    try{
+      if(typeof input.showPicker==='function') input.showPicker();
+      else input.click();
+    }catch(err){
+      try{input.click()}catch(_){cleanup();toast('Não foi possível abrir Arquivos no iPhone.');}
+    }
   }
 
   async function downloadDatabank(button){
-    if(useLocalPackage){ensureFileInput().click();return;}
+    // Safari/iOS bloqueia o fetch CORS da ANATEL e também pode bloquear um picker
+    // disparado somente depois de uma Promise. Por isso, no iPhone o picker é
+    // aberto diretamente dentro do gesto do usuário, no primeiro toque.
+    if(IS_IOS){
+      openPackagePicker();
+      return;
+    }
+    if(useLocalPackage){openPackagePicker();return;}
     const old=button.textContent; button.disabled=true; button.textContent='Baixando...';
     try{
       const resp=await fetch(ANATEL_ZIP_URL,{cache:'no-store',mode:'cors'});
       if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const file=new File([await resp.arrayBuffer()],'estacoes_licenciadas.zip',{type:'application/zip'});
-      await importPackage(file); useLocalPackage=false;
+      const type=(resp.headers.get('content-type')||'').toLowerCase();
+      const buf=await resp.arrayBuffer();
+      if(!buf.byteLength||type.includes('text/html')) throw new Error('Resposta ANATEL bloqueada');
+      const file=new File([buf],'estacoes_licenciadas.zip',{type:'application/zip'});
+      await importPackage(file);
+      useLocalPackage=false;
     }catch(err){
       console.warn('[QSO Logbook] Download direto ANATEL indisponível:',err);
       useLocalPackage=true;
-      toast('Download direto bloqueado. Toque novamente em Baixar Databank e selecione o ZIP da ANATEL.');
+      toast('Servidor ANATEL bloqueou o download direto. Toque novamente em Baixar Databank para selecionar o ZIP/CSV.');
     }finally{button.disabled=false;button.textContent=old;}
   }
 
@@ -182,7 +207,7 @@
     if(keyName!=='stations') return originalRender(keyName);
     const det=document.querySelector('.db-bank[data-bank="stations"]'); if(!det)return;
     const body=det.querySelector('.db-bank-body');
-    body.innerHTML=`<div class="db-meta"><span class="badge">Databank Anatel</span><span class="badge">${STATION_COUNT.toLocaleString('pt-BR')} estações</span><span class="badge">${dbStateFor('stations')}</span></div><div class="db-actions"><button class="btn primary full" type="button" data-anatel-download>Baixar Databank</button></div><div class="db-excel-note">O QSO Logbook aproveita somente o CSV de Radioamador do pacote oficial da ANATEL. Os demais arquivos do ZIP são descartados automaticamente. Se o servidor bloquear o download direto, o mesmo botão permite selecionar o ZIP já baixado.</div>`;
+    body.innerHTML=`<div class="db-meta"><span class="badge">Databank Anatel</span><span class="badge">${STATION_COUNT.toLocaleString('pt-BR')} estações</span><span class="badge">${dbStateFor('stations')}</span></div><div class="db-actions"><button class="btn primary full" type="button" data-anatel-download>Baixar Databank</button></div><div class="db-excel-note">O QSO Logbook aproveita somente o CSV de Radioamador do pacote oficial da ANATEL. Os demais arquivos do ZIP são descartados automaticamente. No iPhone, Baixar Databank abre diretamente o app Arquivos para selecionar o ZIP/CSV da ANATEL. O QSO Logbook filtra automaticamente apenas o arquivo de Radioamador.</div>`;
     body.querySelector('[data-anatel-download]').onclick=e=>downloadDatabank(e.currentTarget);
   };
 
@@ -194,7 +219,6 @@
     const hint=document.querySelector('#databanksCard .hint');
     if(hint)hint.textContent='O Databank Anatel é atualizado pelo pacote oficial de estações licenciadas. O QSO Logbook identifica automaticamente o arquivo de Radioamador dentro do ZIP e descarta os demais arquivos.';
     if(typeof DATABANK_META!=='undefined'&&DATABANK_META.stations)DATABANK_META.stations.label='Databank Anatel';
-    ensureFileInput();
     if(stations?.open)renderDatabankPanel('stations');
   }
 
