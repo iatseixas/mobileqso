@@ -19,7 +19,7 @@ PWA oficial do projeto **QSO Logbook — Livro de Contatos**.
 - `manifest.webmanifest` — manifesto instalável.
 - `sw.js` — cache/offline e atualização do app shell.
 - `icons/` — identidade oficial QSO Logbook para PWA/iOS.
-- `.github/workflows/pages.yml` — publicação no GitHub Pages.
+- Publicação no GitHub Pages pelo fluxo automático configurado no repositório.
 
 ## Instalação
 
@@ -35,3 +35,12 @@ QSOs, favoritos, rádios, ajustes e alterações dos databanks permanecem no dis
 - Cabeçalho em uma linha.
 - Totem superior: **PP5KHZ**.
 - Contador de indicativos lido dinamicamente da `HAM_DB`, com flash visual a cada atualização.
+
+
+## Fonte principal e sincronização
+
+A fonte principal é `iatseixas/mobileqso`, branch `main`. O arquivo canônico é `index.html`. O Google Drive recebe cópias idênticas dos commits aprovados, conforme [QSOs-REGRAS.md](QSOs-REGRAS.md). Datas de upload não definem precedência nem aprovação.
+
+Os publicadores exigem um clone do repositório correto, na branch `main`, com o histórico alinhado a `origin/main`. Execute-os após preparar as alterações nesse clone. Eles publicam no GitHub; o espelhamento no Drive segue as regras acima.
+
+O arquivo `pages.yml` existente apenas no Drive é um extra legado, fora do conjunto espelhado. A publicação atual usa o fluxo automático do Pages configurado no GitHub.
