@@ -1,4 +1,4 @@
-const CACHE_NAME = 'qso-logbook-pwa-v2.6-7';
+const CACHE_NAME = 'qso-logbook-pwa-v2.6-8';
 const APP_SHELL = [
   './',
   './index.html',

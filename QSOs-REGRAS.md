@@ -32,3 +32,12 @@
 - Não criar versões paralelas, ZIPs ou novos HTML por versão sem solicitação.
 - Manter a versão visível dentro do aplicativo.
 - Arquivos extras no Drive devem ser identificados fora do conjunto espelhado; não apagá-los automaticamente.
+
+## Rodada
+- A quantidade de participantes é dinâmica e não possui limite operacional fixo.
+- A ordem permanece cíclica: depois do último participante, **Próximo** devolve automaticamente a palavra ao primeiro e inicia um novo ciclo.
+- **Pular** e **Ausente** mantêm o participante pendente para **Retornar**; esses estados não impedem o ciclo dos demais.
+- Cada alteração da rodada ativa deve ser persistida, inclusive inclusão, reordenação, troca da vez, retorno e remoção.
+- O registro automático cria no máximo um QSO por participante em cada rodada, mesmo que ele fale em vários ciclos.
+- Encerrar a rodada salva o histórico e remove o estado ativo na mesma transação.
+- Excluir uma rodada apaga somente seu histórico; os QSOs já registrados no Livro permanecem preservados.
