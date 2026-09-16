@@ -347,3 +347,75 @@ html[data-theme] .danger-zone{background:color-mix(in srgb,var(--surface) 78%,va
   window.setInterval(run,3500);
   window.addEventListener('focus',run);
 })();
+
+
+/* QSO Logbook — picker de frequência e rádio em padrão dropdown do MODO v2.6-8
+   O campo abre o databank sobre o formulário; não há bloco de busca separado abaixo. */
+(function(){
+  'use strict';
+  if(window.__qsoDropdownDatabank)return;
+  window.__qsoDropdownDatabank=true;
+
+  const STYLE_ID='qso-dropdown-databank-style';
+  const CSS=".qso-integrated-field{position:relative!important}.qso-integrated-field>.qso-integrated-picker{position:absolute!important;left:0;right:0;top:calc(100% + 5px);z-index:1200;display:none!important;margin:0!important;border:1px solid var(--line)!important;border-radius:12px!important;background:var(--surface2)!important;box-shadow:0 18px 45px rgba(0,0,0,.42)!important}.qso-integrated-field>.qso-integrated-picker[open]{display:block!important;max-height:min(56vh,480px)!important;overflow:hidden!important}.qso-integrated-field>.qso-integrated-picker>summary{display:none!important}.qso-integrated-field>.qso-integrated-picker[open]>.inline-picker-body{display:flex;flex-direction:column;min-height:0;max-height:min(56vh,480px);overflow:hidden;padding:10px}.qso-integrated-field>.qso-integrated-picker[open] .searchbox{display:block!important;position:static!important;flex:0 0 auto;margin:0 0 8px!important}.qso-integrated-field>.qso-integrated-picker[open] .radio-picker-results{flex:1 1 auto;min-height:0;max-height:none!important;overflow-y:auto!important;overflow-x:hidden}.qso-integrated-field>.qso-integrated-picker[open] .row{flex:0 0 auto}.qso-integrated-trigger{cursor:pointer}.qso-integrated-trigger:focus{outline:2px solid color-mix(in srgb,var(--cyan) 55%,transparent);outline-offset:2px}@media (max-width:767px){.qso-integrated-field>.qso-integrated-picker[open]{position:fixed!important;left:12px;right:12px;top:18vh;max-height:64vh!important}.qso-integrated-field>.qso-integrated-picker[open]>.inline-picker-body{max-height:64vh}}";
+  function install(){
+    if(document.getElementById(STYLE_ID))return;
+    const style=document.createElement('style');
+    style.id=STYLE_ID;
+    style.textContent=CSS;
+    document.head.appendChild(style);
+  }
+  function norm(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLowerCase();}
+  function fieldByWords(words){
+    for(const label of document.querySelectorAll('label')){
+      if(!words.some(w=>norm(label.textContent).includes(w)))continue;
+      const id=label.getAttribute('for');
+      const input=id&&document.getElementById(id);
+      const field=input?.closest('.field')||label.closest('.field');
+      if(field)return field;
+    }
+    return [...document.querySelectorAll('.field')].find(f=>{
+      const txt=norm([...f.children].filter(e=>!e.matches('.inline-picker,.qso-db-inline-window,.qso-integrated-picker')).map(e=>e.textContent).join(' '));
+      return words.some(w=>txt.includes(w));
+    })||null;
+  }
+  function inputIn(field){
+    return field?.querySelector('input,textarea,[contenteditable="true"]')||null;
+  }
+  function connect(picker,words){
+    if(!picker)return;
+    const field=fieldByWords(words);
+    if(!field)return;
+    field.classList.add('qso-integrated-field');
+    const input=inputIn(field);
+    if(input){
+      input.classList.add('qso-integrated-trigger');
+      input.setAttribute('aria-haspopup','dialog');
+      input.addEventListener('click',()=>{
+        document.querySelectorAll('.qso-integrated-picker[open]').forEach(p=>{if(p!==picker)p.removeAttribute('open');});
+        picker.setAttribute('open','');
+        const search=picker.querySelector('.searchbox');
+        if(search)window.setTimeout(()=>{try{search.focus()}catch(_){ }},30);
+      });
+    }
+    if(picker.parentElement!==field)field.appendChild(picker);
+    picker.classList.add('qso-integrated-picker');
+    picker.hidden=false;
+    picker.style.display='';
+    const summary=picker.querySelector(':scope > summary')||picker.querySelector('summary');
+    if(summary)summary.setAttribute('aria-hidden','true');
+  }
+  function run(){
+    install();
+    connect(document.getElementById('qsoFreqPicker'),['frequencia','frequência']);
+    connect(document.getElementById('qsoRadioPicker'),['radio','rádio','equipamento']);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});
+  else run();
+  new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('click',event=>{
+    const inside=event.target.closest('.qso-integrated-field>.qso-integrated-picker');
+    const trigger=event.target.closest('.qso-integrated-trigger');
+    if(!inside&&!trigger)document.querySelectorAll('.qso-integrated-picker[open]').forEach(p=>p.removeAttribute('open'));
+  },true);
+})();
