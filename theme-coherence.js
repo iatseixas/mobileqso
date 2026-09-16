@@ -233,3 +233,116 @@ html[data-theme] .danger-zone{background:color-mix(in srgb,var(--surface) 78%,va
   });
   observer.observe(document.documentElement,{childList:true,subtree:true});
 })();
+
+/* QSO Logbook — rodada como QSO único com book de participantes v2.6-7
+   Consolida apenas registros explicitamente identificados como Rodada/Round. */
+(function(){
+  'use strict';
+  if(window.__qsoRoundBookNormalizer)return;
+  window.__qsoRoundBookNormalizer=true;
+
+  const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  const textOf=q=>norm([q.event,q.type,q.category,q.title,q.name,q.notes,q.description,q.roundName,q.rodada].filter(Boolean).join(' '));
+  const isRound=q=>/\b(rodada|round)\b/.test(textOf(q))||q.roundId!=null||q.rodadaId!=null||q.round?.id!=null||q.rodada?.id!=null;
+  const timeOf=q=>Date.parse(q.createdAt||q.timestamp||q.dateTime||q.datetime||q.time||q.date||'')||0;
+  const value=(q,keys)=>{for(const k of keys){if(q?.[k]!=null&&String(q[k]).trim())return String(q[k]).trim();}return '';};
+  const participantName=q=>value(q,['participantName','participant','personName','operatorName','contactName','contact','name','callsign','call','operator'])||value(q,['notes'])||'Participante';
+  const roundKey=q=>{
+    const explicit=value(q,['roundId','rodadaId','roundName','rodadaNome']);
+    if(explicit)return 'id:'+norm(explicit);
+    const event=value(q,['event','type','category','title'])||'rodada';
+    const date=new Date(timeOf(q)||Date.now()).toISOString().slice(0,10);
+    return 'fallback:'+norm(event)+'|'+date;
+  };
+
+  function participantBook(rows){
+    return rows.map((q,index)=>({
+      order:index+1,
+      name:participantName(q),
+      callsign:value(q,['callsign','call','indicativo']),
+      time:q.createdAt||q.timestamp||q.dateTime||q.datetime||q.time||'',
+      notes:q.notes||'',
+      sourceId:q.id??q.key??null
+    }));
+  }
+
+  async function stores(){
+    if(!indexedDB.databases)return [];
+    const dbs=await indexedDB.databases();
+    const result=[];
+    for(const info of dbs){
+      if(!info?.name)continue;
+      try{
+        const db=await new Promise((resolve,reject)=>{
+          const req=indexedDB.open(info.name);
+          req.onsuccess=()=>resolve(req.result);
+          req.onerror=()=>reject(req.error);
+        });
+        if(db.objectStoreNames.contains('qsos'))result.push(db);
+        else db.close();
+      }catch(_){}
+    }
+    return result;
+  }
+
+  async function normalizeDb(db){
+    const rows=await new Promise((resolve,reject)=>{
+      const tx=db.transaction('qsos','readonly'),req=tx.objectStore('qsos').getAll();
+      req.onsuccess=()=>resolve(req.result||[]);
+      req.onerror=()=>reject(req.error);
+    });
+    const candidates=rows.filter(q=>q&&!q.__roundBookNormalized&&isRound(q));
+    if(candidates.length<2)return;
+    const groups=new Map();
+    for(const q of candidates){
+      const k=roundKey(q);
+      if(!groups.has(k))groups.set(k,[]);
+      groups.get(k).push(q);
+    }
+    for(const group of groups.values()){
+      if(group.length<2)continue;
+      group.sort((a,b)=>(timeOf(a)||0)-(timeOf(b)||0));
+      const first=group[0];
+      const participants=participantBook(group);
+      const aggregate={
+        ...first,
+        __roundBookNormalized:true,
+        isRound:true,
+        contactType:'round',
+        roundBookVersion:1,
+        roundParticipants:participants,
+        participantBook:participants.map(p=>p.name),
+        participantCount:participants.length,
+        notes:[first.notes||'', 'Participantes: '+participants.map(p=>p.name).join(' • ')].filter(Boolean).join(' | ')
+      };
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction('qsos','readwrite'),store=tx.objectStore('qsos');
+        store.put(aggregate);
+        for(const q of group.slice(1)){
+          if(q.id!=null)store.delete(q.id);
+          else if(q.key!=null)store.delete(q.key);
+        }
+        tx.oncomplete=resolve;
+        tx.onerror=()=>reject(tx.error);
+        tx.onabort=()=>reject(tx.error||new Error('round consolidation aborted'));
+      });
+    }
+  }
+
+  let running=false;
+  async function run(){
+    if(running)return;
+    running=true;
+    try{
+      const dbs=await stores();
+      for(const db of dbs){
+        try{await normalizeDb(db);}catch(err){console.warn('[QSO] Rodada não consolidada:',err);}
+        try{db.close();}catch(_){}
+      }
+    }finally{running=false;}
+  }
+
+  window.setTimeout(run,1800);
+  window.setInterval(run,3500);
+  window.addEventListener('focus',run);
+})();
