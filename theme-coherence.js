@@ -321,6 +321,7 @@ html[data-theme] .danger-zone{background:color-mix(in srgb,var(--surface) 78%,va
         for(const q of group.slice(1)){
           if(q.id!=null)store.delete(q.id);
           else if(q.key!=null)store.delete(q.key);
+          else if(q.qsoId!=null)store.delete(q.qsoId);
         }
         tx.oncomplete=resolve;
         tx.onerror=()=>reject(tx.error);
