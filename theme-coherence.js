@@ -1,4 +1,4 @@
-/* QSO Logbook — coerência cromática v2.6-4
+/* QSO Logbook — coerência cromática v2.6-5
    Cada tema controla toda a casca visual do app. O preview por amostras de cor foi removido. */
 (function(){
   'use strict';
@@ -74,4 +74,105 @@ html[data-theme] .danger-zone{background:color-mix(in srgb,var(--surface) 78%,va
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply,{once:true});
   else apply();
+})();
+
+/* Databanks — busca e seleção dentro da própria janela rolável.
+   Mantém o formulário de QSO no lugar e evita que listas extensas fiquem sob a barra inferior. */
+(function(){
+  'use strict';
+
+  const STYLE_ID='qso-databank-inline-scroll-style';
+  const TARGETS=['buscar no databank de frequencias','buscar no databank de radios'];
+
+  const CSS=`
+.qso-db-inline-window[open]{
+  max-height:min(44vh,360px);
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-gutter:stable;
+  touch-action:pan-y;
+}
+.qso-db-inline-window[open]>summary{
+  position:sticky;
+  top:0;
+  z-index:12;
+  background:var(--surface2);
+}
+.qso-db-inline-window[open] .searchbox{
+  position:sticky;
+  top:64px;
+  z-index:11;
+}
+.qso-db-inline-window[open] .radio-picker-item,
+.qso-db-inline-window[open] .lookup-item{
+  scroll-margin-top:132px;
+}
+.qso-db-inline-window[open]::-webkit-scrollbar{width:6px}
+.qso-db-inline-window[open]::-webkit-scrollbar-thumb{
+  background:color-mix(in srgb,var(--muted) 58%,transparent);
+  border-radius:999px;
+}
+@media (min-width:768px){
+  .qso-db-inline-window[open]{max-height:min(55vh,480px)}
+}
+`;
+
+  function normalize(value){
+    return String(value||'')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .replace(/\s+/g,' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  function installStyle(){
+    if(document.getElementById(STYLE_ID)) return;
+    const style=document.createElement('style');
+    style.id=STYLE_ID;
+    style.textContent=CSS;
+    document.head.appendChild(style);
+  }
+
+  function enhance(root){
+    const scope=root&&root.querySelectorAll?root:document;
+    scope.querySelectorAll('.inline-picker').forEach(picker=>{
+      const summary=picker.querySelector(':scope > summary')||picker.querySelector('summary');
+      if(!summary) return;
+      const title=normalize(summary.textContent);
+      if(!TARGETS.some(target=>title.includes(target))) return;
+
+      picker.classList.add('qso-db-inline-window');
+      if(picker.dataset.qsoDbWindowReady==='1') return;
+      picker.dataset.qsoDbWindowReady='1';
+
+      picker.addEventListener('toggle',()=>{
+        if(!picker.open) picker.scrollTop=0;
+      });
+    });
+  }
+
+  function run(){
+    installStyle();
+    enhance(document);
+  }
+
+  document.addEventListener('click',event=>{
+    const option=event.target.closest('.qso-db-inline-window .radio-picker-item, .qso-db-inline-window .lookup-item');
+    if(!option) return;
+    const picker=option.closest('.qso-db-inline-window');
+    if(!picker||!picker.open) return;
+    window.setTimeout(()=>{
+      if(picker.open) picker.removeAttribute('open');
+      picker.scrollTop=0;
+    },120);
+  });
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run,{once:true});
+  else run();
+
+  const observer=new MutationObserver(()=>enhance(document));
+  observer.observe(document.documentElement,{childList:true,subtree:true});
 })();
