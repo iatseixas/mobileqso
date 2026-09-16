@@ -1,4 +1,4 @@
-const CACHE_NAME = 'qso-logbook-pwa-v2.6-14';
+const CACHE_NAME = 'qso-logbook-pwa-v2.6-15';
 const APP_SHELL = [
   './',
   './index.html',
@@ -27,8 +27,12 @@ function patchIndex(html) {
   const tags = [];
   if (!html.includes('id="qso-databank-window-fix"')) tags.push(DATABANK_WINDOW_STYLE);
   if (!html.includes('id="anatel-databank-runtime"')) tags.push('<script id="anatel-databank-runtime" src="./anatel-databank.js?v=2.6-5"></script>');
-  if (!html.includes('id="theme-coherence-runtime"')) tags.push('<script id="theme-coherence-runtime" src="./theme-coherence.js?v=2.6-10"></script>');
-  if (!tags.length) return html;
+
+  // Sempre substitui a referência anterior para garantir que a PWA carregue
+  // o script visual mais recente, mesmo quando o HTML já tinha a tag antiga.
+  html = html.replace(/<script\b[^>]*theme-coherence\.js[^>]*><\/script>/gi, '');
+  tags.push('<script id="theme-coherence-runtime" src="./theme-coherence.js?v=2.6-10"></script>');
+
   const inject = tags.join('');
   return html.includes('</body>') ? html.replace('</body>', inject + '</body>') : html + inject;
 }
