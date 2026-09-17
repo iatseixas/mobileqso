@@ -1,11 +1,11 @@
-/* QSO Logbook — status visual das fontes v2.6-20
+/* QSO Logbook — status visual das fontes v2.6-21
    Frame laranja = ainda não confirmado / não localizado / consulta indisponível.
    Frame verde = o indicativo selecionado foi localizado positivamente naquela fonte.
    O clique no selo nunca altera o estado por si só. */
 (function(){
   'use strict';
-  if(window.__qsoSourceStatusV2620)return;
-  window.__qsoSourceStatusV2620=true;
+  if(window.__qsoSourceStatusV2621)return;
+  window.__qsoSourceStatusV2621=true;
 
   const STYLE_ID='qso-source-status-style';
   const CACHE_TTL=15*60*1000;
@@ -25,6 +25,14 @@
 .source-btn.qso-source-checking{
   border:2px solid #ff9800!important;
   box-shadow:0 0 0 1px rgba(255,152,0,.18)!important;
+}
+#lookupResults .source-card .source-call{
+  cursor:pointer;
+}
+#lookupResults .source-card .source-call[role="button"]:focus-visible{
+  outline:2px solid var(--gold);
+  outline-offset:3px;
+  border-radius:4px;
 }
 `;
 
@@ -72,6 +80,58 @@
     const source=document.querySelector('#lookupResults .source-btn[data-source][data-call]');
     if(source)return normCall(source.dataset.call);
     return '';
+  }
+
+  function enhanceSelectedCall(){
+    document.querySelectorAll('#lookupResults .source-card .source-call').forEach(el=>{
+      const call=normCall(el.textContent);
+      if(!call)return;
+      el.dataset.qsoSearchCall=call;
+      el.setAttribute('role','button');
+      el.tabIndex=0;
+      el.setAttribute('title',`Pesquisar novamente ${call}`);
+      el.setAttribute('aria-label',`Pesquisar novamente o indicativo ${call}`);
+    });
+  }
+
+  function triggerSelectedCallSearch(value){
+    const call=normCall(value);
+    if(!call)return;
+    const input=document.getElementById('lookup');
+    if(input)input.value=call;
+    generation++;
+    resetVisible(call);
+    if(typeof window.lookup==='function')window.lookup(call);
+    else if(input)input.dispatchEvent(new Event('input',{bubbles:true}));
+    else if(typeof window.selectHam==='function')window.selectHam(call);
+    setTimeout(()=>{
+      enhanceSelectedCall();
+      if(selectedCall()===call)startForVisibleCard();
+    },90);
+  }
+
+  function selectedCallTarget(event){
+    return event.target&&event.target.closest?event.target.closest('#lookupResults .source-card .source-call'):null;
+  }
+
+  function bindSelectedCallActivation(){
+    if(document.documentElement.dataset.qsoCallSearchBound==='1')return;
+    document.documentElement.dataset.qsoCallSearchBound='1';
+    document.addEventListener('click',event=>{
+      const target=selectedCallTarget(event);
+      if(!target)return;
+      event.preventDefault();
+      event.stopPropagation();
+      triggerSelectedCallSearch(target.dataset.qsoSearchCall||target.textContent);
+    },true);
+    document.addEventListener('keydown',event=>{
+      if(event.key!=='Enter'&&event.key!==' ')return;
+      const target=selectedCallTarget(event);
+      if(!target)return;
+      event.preventDefault();
+      event.stopPropagation();
+      triggerSelectedCallSearch(target.dataset.qsoSearchCall||target.textContent);
+    },true);
   }
 
   function resetVisible(call=''){
@@ -277,6 +337,8 @@
 
   function bind(){
     installStyle();
+    bindSelectedCallActivation();
+    enhanceSelectedCall();
     const lookup=document.getElementById('lookup');
     if(lookup&&lookup.dataset.qsoSourceStatusBound!=='1'){
       lookup.dataset.qsoSourceStatusBound='1';
@@ -297,6 +359,7 @@
     clearTimeout(uiTimer);
     uiTimer=setTimeout(()=>{
       installStyle();
+      enhanceSelectedCall();
       const call=selectedCall();
       if(call){
         const card=document.querySelector('#lookupResults .source-card');
