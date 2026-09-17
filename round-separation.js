@@ -1,10 +1,12 @@
-/* QSO Logbook — Rodada separada do Livro + relatório A4/PDF v2.6-18
+/* QSO Logbook — Rodada separada do Livro + relatório A4/PDF v2.6-19
    Rodada e QSO direto são registros independentes. Participantes da Rodada
    permanecem somente no histórico da própria Rodada. */
 (function(){
   'use strict';
-  if(window.__qsoRoundSeparationV2618)return;
-  window.__qsoRoundSeparationV2618=true;
+  if(window.__qsoRoundSeparationV2619)return;
+  window.__qsoRoundSeparationV2619=true;
+  // Impede o normalizador legado de Rodadas em qsos de iniciar.
+  window.__qsoRoundBookNormalizer=true;
 
   const STATE_LABELS={waiting:'AGUARDANDO',speaking:'COM A PALAVRA',done:'CONCLUÍDO',skipped:'PULADO',absent:'AUSENTE'};
   let cleanupBusy=false,cleanupTimer=null;
