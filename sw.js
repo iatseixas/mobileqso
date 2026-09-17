@@ -1,4 +1,4 @@
-const CACHE_NAME = 'qso-logbook-pwa-v2.6-19';
+const CACHE_NAME = 'qso-logbook-pwa-v2.6-20';
 const APP_SHELL = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const APP_SHELL = [
   './anatel-databank.js',
   './theme-coherence.js',
   './round-separation.js',
+  './source-status.js',
   './icons/icon-64.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -33,8 +34,10 @@ function patchIndex(html) {
   // os scripts operacionais mais recentes, mesmo quando o HTML tinha tags antigas.
   html = html.replace(/<script\b[^>]*theme-coherence\.js[^>]*><\/script>/gi, '');
   html = html.replace(/<script\b[^>]*round-separation\.js[^>]*><\/script>/gi, '');
+  html = html.replace(/<script\b[^>]*source-status\.js[^>]*><\/script>/gi, '');
   tags.push('<script id="round-separation-runtime" src="./round-separation.js?v=2.6-19"></script>');
   tags.push('<script id="theme-coherence-runtime" src="./theme-coherence.js?v=2.6-11"></script>');
+  tags.push('<script id="source-status-runtime" src="./source-status.js?v=2.6-20"></script>');
 
   const inject = tags.join('');
   return html.includes('</body>') ? html.replace('</body>', inject + '</body>') : html + inject;
