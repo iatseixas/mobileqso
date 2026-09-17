@@ -1,4 +1,4 @@
-const CACHE_NAME = 'qso-logbook-pwa-v2.6-16';
+const CACHE_NAME = 'qso-logbook-pwa-v2.6-17';
 const APP_SHELL = [
   './',
   './index.html',
@@ -46,10 +46,6 @@ self.addEventListener('activate', event => {
     const keys = await caches.keys();
     await Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
     await self.clients.claim();
-    const windows = await self.clients.matchAll({type:'window', includeUncontrolled:true});
-    await Promise.all(windows.map(async client => {
-      try { await client.navigate(client.url); } catch (_) {}
-    }));
   })());
 });
 
@@ -60,7 +56,7 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
 
   if (req.mode === 'navigate') {
-    event.respondWith(fetch(req).then(async resp => {
+    event.respondWith(fetch(req, {cache:'no-store'}).then(async resp => {
       const html = patchIndex(await resp.text());
       const headers = new Headers(resp.headers);
       headers.delete('content-length');
