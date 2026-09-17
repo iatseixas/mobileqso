@@ -49,5 +49,6 @@
 - O frame permanece **laranja** enquanto a fonte não confirmar o indicativo, inclusive durante consulta, indisponibilidade ou quando não localizado.
 - O frame muda para **verde** somente após resposta positiva que identifique o mesmo indicativo naquela fonte.
 - Clicar no selo não altera o estado visual por si só; o verde representa confirmação real da fonte.
+- Clicar no próprio **indicativo** do cartão executa novamente a busca desse indicativo e reinicia a verificação das fontes; isso não confirma nenhum selo por si só.
 - Ao trocar ou limpar o indicativo pesquisado, os estados das fontes são reiniciados para o novo indicativo.
 - A **ANATEL** é confirmada pelo registro selecionado na base local embarcada. **RadioID, QRZ, EchoLink e BrandMeister** são verificados de forma independente quando houver internet.
