@@ -419,3 +419,35 @@ html[data-theme] .danger-zone{background:color-mix(in srgb,var(--surface) 78%,va
     if(!inside&&!trigger)document.querySelectorAll('.qso-integrated-picker[open]').forEach(p=>p.removeAttribute('open'));
   },true);
 })();
+
+/* QSO Logbook — remover modal de busca de rádios v2.6-9
+   O campo Rádio/equipamento permanece livre para digitação; a janela separada deixa de existir na interface. */
+(function(){
+  'use strict';
+  if(window.__qsoRadioDatabankRemoved)return;
+  window.__qsoRadioDatabankRemoved=true;
+
+  const norm=v=>String(v||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim().toLowerCase();
+  function hideRadioPicker(){
+    document.querySelectorAll('.inline-picker').forEach(picker=>{
+      const summary=picker.querySelector(':scope > summary')||picker.querySelector('summary');
+      if(!summary||!norm(summary.textContent).includes('buscar no databank de radios'))return;
+      picker.removeAttribute('open');
+      picker.hidden=true;
+      picker.setAttribute('aria-hidden','true');
+      picker.style.setProperty('display','none','important');
+    });
+  }
+  function freeRadioField(){
+    const input=document.getElementById('radio');
+    if(!input||input.dataset.qsoRadioFreeField==='1')return;
+    input.dataset.qsoRadioFreeField='1';
+    input.classList.remove('qso-integrated-trigger');
+    input.removeAttribute('aria-haspopup');
+    input.addEventListener('click',event=>event.stopImmediatePropagation(),true);
+  }
+  function run(){hideRadioPicker();freeRadioField();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});
+  else run();
+  new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true});
+})();
