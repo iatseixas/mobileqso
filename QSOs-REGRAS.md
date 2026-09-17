@@ -43,3 +43,11 @@
 - Encerrar a rodada salva o histórico e remove o estado ativo na mesma transação.
 - Excluir uma rodada apaga somente o histórico dessa Rodada.
 - Cada Rodada encerrada ou ativa deve disponibilizar **RELATÓRIO A4 / PDF**, com lista ordenada dos participantes, dados operacionais, tempos e margens estreitas para impressão.
+
+## Selos das fontes
+- No cartão do indicativo selecionado, cada fonte possui estado visual independente.
+- O frame permanece **laranja** enquanto a fonte não confirmar o indicativo, inclusive durante consulta, indisponibilidade ou quando não localizado.
+- O frame muda para **verde** somente após resposta positiva que identifique o mesmo indicativo naquela fonte.
+- Clicar no selo não altera o estado visual por si só; o verde representa confirmação real da fonte.
+- Ao trocar ou limpar o indicativo pesquisado, os estados das fontes são reiniciados para o novo indicativo.
+- A **ANATEL** é confirmada pelo registro selecionado na base local embarcada. **RadioID, QRZ, EchoLink e BrandMeister** são verificados de forma independente quando houver internet.
