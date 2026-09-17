@@ -1,10 +1,11 @@
-const CACHE_NAME = 'qso-logbook-pwa-v2.6-17';
+const CACHE_NAME = 'qso-logbook-pwa-v2.6-18';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './anatel-databank.js',
   './theme-coherence.js',
+  './round-separation.js',
   './icons/icon-64.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -28,10 +29,12 @@ function patchIndex(html) {
   if (!html.includes('id="qso-databank-window-fix"')) tags.push(DATABANK_WINDOW_STYLE);
   if (!html.includes('id="anatel-databank-runtime"')) tags.push('<script id="anatel-databank-runtime" src="./anatel-databank.js?v=2.6-5"></script>');
 
-  // Sempre substitui a referência anterior para garantir que a PWA carregue
-  // o script visual mais recente, mesmo quando o HTML já tinha a tag antiga.
+  // Sempre substitui as referências anteriores para garantir que a PWA carregue
+  // os scripts operacionais mais recentes, mesmo quando o HTML tinha tags antigas.
   html = html.replace(/<script\b[^>]*theme-coherence\.js[^>]*><\/script>/gi, '');
+  html = html.replace(/<script\b[^>]*round-separation\.js[^>]*><\/script>/gi, '');
   tags.push('<script id="theme-coherence-runtime" src="./theme-coherence.js?v=2.6-11"></script>');
+  tags.push('<script id="round-separation-runtime" src="./round-separation.js?v=2.6-18"></script>');
 
   const inject = tags.join('');
   return html.includes('</body>') ? html.replace('</body>', inject + '</body>') : html + inject;
