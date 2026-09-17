@@ -1,4 +1,4 @@
-const CACHE_NAME = 'qso-logbook-pwa-v2.6-15';
+const CACHE_NAME = 'qso-logbook-pwa-v2.6-16';
 const APP_SHELL = [
   './',
   './index.html',
@@ -31,7 +31,7 @@ function patchIndex(html) {
   // Sempre substitui a referência anterior para garantir que a PWA carregue
   // o script visual mais recente, mesmo quando o HTML já tinha a tag antiga.
   html = html.replace(/<script\b[^>]*theme-coherence\.js[^>]*><\/script>/gi, '');
-  tags.push('<script id="theme-coherence-runtime" src="./theme-coherence.js?v=2.6-10"></script>');
+  tags.push('<script id="theme-coherence-runtime" src="./theme-coherence.js?v=2.6-11"></script>');
 
   const inject = tags.join('');
   return html.includes('</body>') ? html.replace('</body>', inject + '</body>') : html + inject;
