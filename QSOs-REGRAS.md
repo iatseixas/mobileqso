@@ -38,6 +38,8 @@
 - A ordem permanece cíclica: depois do último participante, **Próximo** devolve automaticamente a palavra ao primeiro e inicia um novo ciclo.
 - **Pular** e **Ausente** mantêm o participante pendente para **Retornar**; esses estados não impedem o ciclo dos demais.
 - Cada alteração da rodada ativa deve ser persistida, inclusive inclusão, reordenação, troca da vez, retorno e remoção.
-- O registro automático cria no máximo um QSO por participante em cada rodada, mesmo que ele fale em vários ciclos.
+- **Rodada e Livro de QSO direto são registros independentes.** Participantes de uma Rodada permanecem somente na store/histórico da própria Rodada e não criam QSOs individuais no Livro.
+- Registros que tenham sido gerados automaticamente por uma Rodada devem ser removidos do Livro sem alterar QSOs diretos criados pelo operador.
 - Encerrar a rodada salva o histórico e remove o estado ativo na mesma transação.
-- Excluir uma rodada apaga somente seu histórico; os QSOs já registrados no Livro permanecem preservados.
+- Excluir uma rodada apaga somente o histórico dessa Rodada.
+- Cada Rodada encerrada ou ativa deve disponibilizar **RELATÓRIO A4 / PDF**, com lista ordenada dos participantes, dados operacionais, tempos e margens estreitas para impressão.
